@@ -144,6 +144,7 @@ ac_add_options --disable-updater
 ac_add_options --with-pthreads
 # ac_add_options --disable-gconf
 ac_add_options --enable-official-branding
+ac_add_options --disable-precompiled-startupcache
 
 export MOZILLA_OFFICIAL=1
 
