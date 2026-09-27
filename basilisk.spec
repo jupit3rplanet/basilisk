@@ -30,9 +30,9 @@ URL:            https://basilisk-browser.org
 
 Version:	      2026.09.24.1
 Release:        1
-Source0:        https://repo.palemoon.org/Basilisk-Dev/Basilisk/archive/v%version.tar.gz
+Source0:        https://repo.palemoon.org/Basilisk-Dev/Basilisk/archive/v%version.tar.gz#/%tarname-v%version.tar.gz
 # Required for building the browser (latest release)
-Source1:        https://repo.palemoon.org/MoonchildProductions/UXP/archive/%{uxp_commit}.tar.gz
+Source1:        https://repo.palemoon.org/MoonchildProductions/UXP/archive/%{uxp_commit}.tar.gz#/UXP-%{uxp_commit}.tar.gz
 Source2:        basilisk.desktop
 Source3:        official.tar.xz
 
