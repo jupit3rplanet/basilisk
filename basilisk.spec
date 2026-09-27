@@ -82,9 +82,9 @@ Requires:       %name = %version
 %{_datadir}/idl/%{name}-%{moz_ver}
 
 %prep
-%autosetup -p1 -n %{tarname}
-tar -xf %{S:1} --strip-components=1 -C %{_builddir}/%{tarname}/platform/
-tar -xf %{S:3} -C %{_builddir}/%{tarname}/%name/branding/
+%autosetup -p1 -n %{tarname}-v%{version}
+tar -xf %{S:1} --strip-components=1 -C %{_builddir}/%{tarname}-v%{version}/platform/
+tar -xf %{S:3} -C %{_builddir}/%{tarname}-v%{version}/%name/branding/
 
 # plans to merge in upstream, per Basilisk-Dev
 # awaiting MR
@@ -92,7 +92,7 @@ patch -p1 < patches/0001-goanna-disable-pref.diff
 
 # Append stuff we'd rather parse than hardcode, such
 # as flags that should be autodetected but aren't
-cat >%{_builddir}/%{tarname}/.mozconfig <<EOF
+cat >%{_builddir}/%{tarname}-v%{version}/.mozconfig <<EOF
 %ifnarch %{ix86} %{armv7} %{riscv32}
 # Clear this if not a 64bit build
 _BUILD_64=1
