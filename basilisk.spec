@@ -1,5 +1,3 @@
-%define tarname Basilisk
-
 # set to nil when packaging a release, 
 # or the long commit tag for the specific git branch
 %define commit_tag %{nil}
@@ -30,9 +28,9 @@ URL:            https://basilisk-browser.org
 
 Version:	      2026.09.24.1
 Release:        1
-Source0:        https://repo.palemoon.org/Basilisk-Dev/Basilisk/archive/v%version.tar.gz#/%tarname-v%version.tar.gz
+Source0:        https://repo.palemoon.org/Basilisk-Dev/Basilisk/archive/v%version.tar.gz#/%name-%version.tar.gz
 # Required for building the browser (latest release)
-Source1:        https://repo.palemoon.org/MoonchildProductions/UXP/archive/%{uxp_commit}.tar.gz#/UXP-%{uxp_commit}.tar.gz
+Source1:        https://repo.palemoon.org/MoonchildProductions/UXP/archive/%{uxp_commit}.tar.gz#/%{uxp_commit}.tar.gz
 Source2:        basilisk.desktop
 Source3:        official.tar.xz
 
@@ -82,9 +80,9 @@ Requires:       %name = %version
 %{_datadir}/idl/%{name}-%{moz_ver}
 
 %prep
-%autosetup -p1 -n %{tarname}-v%{version}
-tar -xf %{S:1} --strip-components=1 -C %{_builddir}/%{tarname}-v%{version}/platform/
-tar -xf %{S:3} -C %{_builddir}/%{tarname}-v%{version}/%name/branding/
+%autosetup -p1 -n %name
+tar -xf %{S:1} --strip-components=1 -C %{_builddir}/%name/platform/
+tar -xf %{S:3} -C %{_builddir}/%name/%name/branding/
 
 # plans to merge in upstream, per Basilisk-Dev
 # awaiting MR
@@ -92,7 +90,7 @@ patch -p1 < patches/0001-goanna-disable-pref.diff
 
 # Append stuff we'd rather parse than hardcode, such
 # as flags that should be autodetected but aren't
-cat >%{_builddir}/%{tarname}-v%{version}/.mozconfig <<EOF
+cat >%{_builddir}/%name/.mozconfig <<EOF
 %ifnarch %{ix86} %{armv7} %{riscv32}
 # Clear this if not a 64bit build
 _BUILD_64=1
