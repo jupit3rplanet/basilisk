@@ -1,15 +1,7 @@
-# set to nil when packaging a release, 
-# or the long commit tag for the specific git branch
-%define commit_tag %{nil}
-
-# when using a commit_tag (i.e. not nil) add a commit date
-# decoration ~0.yyyyMMdd to Version number
-%define commit_date %{nil}
-
 %define moz_ver 52.9.0
 
-# UXP platform commit this Basilisk release is built against.
-%define uxp_commit e59e88bfd59f37fabc15b30ec304f90a410c751f
+# palemoon's XUL version
+%define pm_rel_base 20260922
 
 # fixes error: Empty %files file …/debugsourcefiles.list
 %undefine _debugsource_packages
@@ -21,16 +13,16 @@
 %global __requires_exclude ^lib(hunspell|lgpllibs|moz.*|nspr4|nss3|nssutil3|plc4|plds4|smime3|ssl3|xul)\\.so.*
 
 Name:           basilisk
-Summary:        An independent browser derived from Firefox/Mozilla community code.
+Summary:        An independent browser derived from Firefox/Mozilla community code
 Group:          Internet
 License:        MPL-2.0
 URL:            https://basilisk-browser.org
 
-Version:	      2026.09.24.1
+Version:	    2026.09.24
 Release:        1
 Source0:        https://repo.palemoon.org/Basilisk-Dev/Basilisk/archive/v%version.tar.gz#/%name-%version.tar.gz
 # Required for building the browser (latest release)
-Source1:        https://repo.palemoon.org/MoonchildProductions/UXP/archive/%{uxp_commit}.tar.gz#/%{uxp_commit}.tar.gz
+Source1:        https://repo.palemoon.org/MoonchildProductions/UXP/archive/RB_%{pm_rel_base}.tar.gz
 Source2:        basilisk.desktop
 Source3:        official.tar.xz
 
@@ -56,10 +48,10 @@ BuildRequires:  zip
 BuildRequires:  m4
 
 %description
-%summary
+%summary.
 
 %files
-%license LICENSE
+%license LICENSE.md
 %doc README.md AUTHORS
 %{_bindir}/%{name}
 %{_libdir}/%{name}-%{moz_ver}
@@ -128,6 +120,11 @@ ac_add_options --libdir=%{_libdir}
 # -O3 for maximum optimization, -w to suppress all warnings, -flto=thin for ThinLTO
 ac_add_options --enable-optimize="%{basilisk_optflags} -O3 -w -flto=thin"
 
+# Temporary fix for znver1 architecture
+%ifarch %{znver1}
+ac_add_options --disable-precompiled-startupcache
+%endif
+
 # Standard build options for Basilisk
 ac_add_options --enable-application=basilisk
 ac_add_options --enable-default-toolkit=cairo-gtk\$_GTK_VERSION
@@ -147,7 +144,6 @@ ac_add_options --disable-updater
 ac_add_options --with-pthreads
 # ac_add_options --disable-gconf
 ac_add_options --enable-official-branding
-ac_add_options --disable-precompiled-startupcache
 
 export MOZILLA_OFFICIAL=1
 
