@@ -17,15 +17,17 @@ Summary:        An independent browser derived from Firefox/Mozilla community co
 Group:          Internet
 License:        MPL-2.0
 URL:            https://basilisk-browser.org
-Version:	      2026.09.24
+
+Version:	    2026.09.24
 Release:        1
 Source0:        https://repo.palemoon.org/Basilisk-Dev/Basilisk/archive/v%version.tar.gz#/%name-%version.tar.gz
 # Required for building the browser (latest release)
 Source1:        https://repo.palemoon.org/MoonchildProductions/UXP/archive/RB_%{pm_rel_base}.tar.gz
 Source2:        basilisk.desktop
+Source3:        official.tar.xz
 
 BuildRequires:  pkgconfig(gtk+-3.0) pkgconfig(gtk+-2.0)
-BuildRequires:  pkgconfig(python)
+BuildRequires:  pkgconfig(python3)
 BuildRequires:  pkgconfig(alsa)
 BuildRequires:  pkgconfig(dbus-glib-1)
 BuildRequires:  pkgconfig(gconf-2.0)
@@ -38,15 +40,15 @@ BuildRequires:	pkgconfig(cairo)
 BuildRequires:	pkgconfig(pixman-1)
 BuildRequires:	pkgconfig(libjpeg)
 BuildRequires:	pkgconfig(zlib)
-#BuildRequires:	pkgconfig(nspr)
-BuildRequires:	nasm
+BuildRequires:  python3
 BuildRequires:  yasm
+BuildRequires:  nasm
 BuildRequires:  make
 BuildRequires:  zip
 BuildRequires:  m4
 
 %description
-%{summary}.
+%summary.
 
 %files
 %license LICENSE.md
@@ -72,6 +74,7 @@ Requires:       %name = %version
 %prep
 %autosetup -p1 -n %name
 tar -xf %{S:1} --strip-components=1 -C %{_builddir}/%name/platform/
+tar -xf %{S:3} -C %{_builddir}/%name/%name/branding/
 
 # plans to merge in upstream, per Basilisk-Dev
 # awaiting MR
@@ -99,15 +102,23 @@ export NM="%{__nm}"
 export RANLIB="%{__ranlib}"
 export LD="%{__ld}"
 
-# ThinLTO with Clang/LLVM. -Wl,--undefined-version is needed due to differences between GNU ld and lld
-export LDFLAGS="-flto=thin -fuse-ld=lld -Wl,--undefined-version"
+# ThinLTO with Clang/LLVM. -Wl,--undefined-version is needed due to differences between GNU ld and lld.
+# We fully override LDFLAGS (rather than appending to the distro default) because the
+# mozbuild link step needs consistent lld+ThinLTO flags, so re-add the hardening bits
+# (RELRO, BIND_NOW, build-id) that OpenMandriva normally injects via %{optflags}/%{build_ldflags}.
+export LDFLAGS="-flto=thin -fuse-ld=lld -Wl,--undefined-version -Wl,-z,relro -Wl,-z,now -Wl,--build-id=sha1"
 
 # Install locations
 ac_add_options --prefix=%{_prefix}
 ac_add_options --libdir=%{_libdir}
 
-# O3 for maximum optimization, -w to suppress all warnings, -flto=thin for ThinLTO
-ac_add_options --enable-optimize="%{optflags} -O3 -w -flto=thin"
+# optflags already carries OpenMandriva's own -O level and its own -flto=thin/-flto=auto
+# (plus -Os on some profiles). Stacking our own -O3/-flto=thin on top of that, unfiltered,
+# was producing things like "-Os ... -flto ... -O3 ... -flto=thin" on the same command line:
+%define basilisk_optflags %(echo "%{optflags}" | sed -E 's/-O[0-9a-zA-Z]*//g; s/-flto(=[a-zA-Z0-9]+)?//g; s/[[:space:]]+/ /g')
+
+# -O3 for maximum optimization, -w to suppress all warnings, -flto=thin for ThinLTO
+ac_add_options --enable-optimize="%{basilisk_optflags} -O3 -w -flto=thin"
 
 # Temporary fix for znver1 architecture
 %ifarch %{znver1}
@@ -121,6 +132,7 @@ ac_add_options --enable-jemalloc
 ac_add_options --enable-strip
 ac_add_options --enable-devtools
 ac_add_options --enable-av1
+# ac_add_options --enable-jxl
 ac_add_options --enable-webrtc
 ac_add_options --enable-gamepad
 ac_add_options --enable-pie
@@ -130,6 +142,7 @@ ac_add_options --disable-debug
 ac_add_options --disable-necko-wifi
 ac_add_options --disable-updater
 ac_add_options --with-pthreads
+# ac_add_options --disable-gconf
 ac_add_options --enable-official-branding
 
 export MOZILLA_OFFICIAL=1
